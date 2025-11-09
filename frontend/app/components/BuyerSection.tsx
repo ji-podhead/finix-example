@@ -1,29 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Buyer, Merchant, Item } from '@/types/global';
+import PaymentForm from '../PaymentForm';
 
 interface BuyerSectionProps {
-  buyers: Buyer[];
   merchants: Merchant[];
-  addBuyer: (buyer: Buyer) => void;
 }
 
-const BuyerSection: React.FC<BuyerSectionProps> = ({ buyers, merchants, addBuyer }) => {
+const BuyerSection: React.FC<BuyerSectionProps> = ({ merchants }) => {
+  const [buyers, setBuyers] = useState<Buyer[]>([]);
   const [activeSubTab, setActiveSubTab] = useState<'browseItems' | 'existingBuyers'>('browseItems');
   const [selectedItem, setSelectedItem] = useState<{ item: Item; merchant: Merchant } | null>(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [createdBuyer, setCreatedBuyer] = useState<Buyer | null>(null);
   
   // Buyer form state
   const [buyerFirstName, setBuyerFirstName] = useState('');
   const [buyerLastName, setBuyerLastName] = useState('');
   const [buyerEmail, setBuyerEmail] = useState('');
 
+  useEffect(() => {
+    const fetchBuyers = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/identities');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setBuyers(data);
+      } catch (error) {
+        console.error('Error fetching buyers:', error);
+      }
+    };
+    fetchBuyers();
+  }, []);
+
   // Get all items from all merchants
   const getAllItems = () => {
     const items: { item: Item; merchant: Merchant }[] = [];
     merchants.forEach((merchant) => {
-      merchant.items.forEach((item) => {
-        items.push({ item, merchant });
-      });
+      if (merchant.items) {
+        merchant.items.forEach((item) => {
+          items.push({ item, merchant });
+        });
+      }
     });
     return items;
   };
@@ -39,16 +58,38 @@ const BuyerSection: React.FC<BuyerSectionProps> = ({ buyers, merchants, addBuyer
       return;
     }
 
-    // Create new buyer identity
-    const newBuyer: Buyer = {
-      id: `buyer-${Date.now()}`,
-      firstName: buyerFirstName,
-      lastName: buyerLastName,
-      email: buyerEmail,
+    const newBuyerData = {
+      entity: {
+        first_name: buyerFirstName,
+        last_name: buyerLastName,
+        email: buyerEmail,
+      },
+      identity_roles: ['BUYER'],
+      type: 'PERSONAL',
     };
 
-    // Add buyer to the system
-    addBuyer(newBuyer);
+    try {
+      const response = await fetch('http://localhost:3001/create-buyer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newBuyerData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`Failed to create buyer: ${error.error || response.statusText}`);
+      }
+
+      const createdBuyer = await response.json();
+      setBuyers([...buyers, createdBuyer]);
+      setCreatedBuyer(createdBuyer);
+
+    } catch (error) {
+      console.error('Error creating buyer:', error);
+      alert((error as Error).message);
+    }
 
     // TODO: Here we would integrate with the payment system to:
     // 1. Create buyer identity in Finix
@@ -56,7 +97,7 @@ const BuyerSection: React.FC<BuyerSectionProps> = ({ buyers, merchants, addBuyer
     // 3. Create payment instrument
     // 4. Create transfer
 
-    alert(`Purchase initiated!\n\nBuyer: ${newBuyer.firstName} ${newBuyer.lastName}\nItem: ${selectedItem.item.name}\nPrice: ${selectedItem.item.currency} ${selectedItem.item.price.toFixed(2)}\nMerchant: ${selectedItem.merchant.name}`);
+    alert(`Purchase initiated!\n\nBuyer: ${buyerFirstName} ${buyerLastName}\nItem: ${selectedItem.item.name}\nPrice: ${selectedItem.item.currency} ${selectedItem.item.price.toFixed(2)}\nMerchant: ${selectedItem.merchant.name}`);
 
     // Reset form
     setBuyerFirstName('');
@@ -154,17 +195,36 @@ const BuyerSection: React.FC<BuyerSectionProps> = ({ buyers, merchants, addBuyer
                     className="w-full p-2 border rounded-md"
                   />
                   
+                  {createdBuyer && (
+                    <PaymentForm
+                      buyerId={createdBuyer.id}
+                      merchantId={selectedItem.merchant.id}
+                      amount={selectedItem.item.price}
+                      currency={selectedItem.item.currency}
+                      onPaymentSuccess={(data) => {
+                        console.log('Payment success:', data);
+                        alert('Payment successful!');
+                      }}
+                      onPaymentError={(error) => {
+                        console.error('Payment error:', error);
+                        alert('Payment failed.');
+                      }}
+                    />
+                  )}
+
                   <div className="flex space-x-4">
                     <button
                       onClick={handleCreateBuyerAndPurchase}
                       className="flex-1 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700"
+                      disabled={!!createdBuyer}
                     >
-                      Proceed to Payment
+                      Create Buyer
                     </button>
                     <button
                       onClick={() => {
                         setShowPaymentForm(false);
                         setSelectedItem(null);
+                        setCreatedBuyer(null);
                       }}
                       className="flex-1 py-2 px-4 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
                     >
@@ -187,8 +247,8 @@ const BuyerSection: React.FC<BuyerSectionProps> = ({ buyers, merchants, addBuyer
             <div className="space-y-4">
               {buyers.map((buyer) => (
                 <div key={buyer.id} className="p-4 border rounded-md shadow-sm">
-                  <h3 className="text-xl font-medium">{buyer.firstName} {buyer.lastName}</h3>
-                  <p>Email: {buyer.email}</p>
+                  <h3 className="text-xl font-medium">{buyer.entity.first_name} {buyer.entity.last_name}</h3>
+                  <p>Email: {buyer.entity.email}</p>
                   <p className="text-sm text-gray-600">ID: {buyer.id}</p>
                 </div>
               ))}

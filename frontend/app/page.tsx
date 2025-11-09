@@ -7,12 +7,7 @@ import { Buyer, Merchant, Item } from "@/types/global";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"buyer" | "merchant">("buyer");
-  const [buyers, setBuyers] = useState<Buyer[]>([]);
   const [merchants, setMerchants] = useState<Merchant[]>([]);
-
-  const addBuyer = (buyer: Buyer) => {
-    setBuyers((prevBuyers) => [...prevBuyers, buyer]);
-  };
 
   const addMerchant = (merchant: Merchant) => {
     setMerchants((prevMerchants) => [...prevMerchants, merchant]);
@@ -34,8 +29,6 @@ export default function Home() {
       <main className="container mx-auto py-8 px-4">
         {activeTab === "buyer" && (
           <BuyerSection
-            buyers={buyers}
-            addBuyer={addBuyer}
             merchants={merchants}
           />
         )}

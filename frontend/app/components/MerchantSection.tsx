@@ -1,14 +1,11 @@
 import React, { useState, FC, useEffect } from 'react';
 import { Merchant, Item, Address, DateOfBirth } from '@/types/global';
+import PaymentInstrumentForm from './PaymentInstrumentForm';
 
-interface MerchantSectionProps {
-  // merchants: Merchant[]; // Removed as we will fetch merchants from backend
-  // addMerchant: (merchant: Merchant) => void; // Removed as we will call backend API
-  addItemToMerchant: (merchantId: string, item: Item) => void;
-}
+interface MerchantSectionProps {}
 
-const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'createMerchant' | 'merchantPlatform'>('createMerchant');
+const MerchantSection: FC<MerchantSectionProps> = () => {
+  const [activeSubTab, setActiveSubTab] = useState<'createMerchant' | 'merchantPlatform' | 'paymentInstrument'>('createMerchant');
   const [newMerchantName, setNewMerchantName] = useState('');
   const [newMerchantEmail, setNewMerchantEmail] = useState('');
   const [businessName, setBusinessName] = useState('');
@@ -38,6 +35,7 @@ const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
   const [merchants, setMerchants] = useState<Merchant[]>([]); // State to hold merchants fetched from backend
   const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
   const [selectedMerchantId, setSelectedMerchantId] = useState('');
+  const [items, setItems] = useState<Item[]>([]);
   const [newItemName, setNewItemName] = useState('');
   const [newItemPrice, setNewItemPrice] = useState('');
   const [newItemCurrency, setNewItemCurrency] = useState('USD');
@@ -59,6 +57,65 @@ const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
     fetchMerchants();
   }, []);
 
+  useEffect(() => {
+    if (selectedMerchantId) {
+      const fetchItems = async () => {
+        try {
+          const response = await fetch(`http://localhost:3001/merchants/${selectedMerchantId}/items`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          setItems(data);
+        } catch (error) {
+          console.error('Error fetching items:', error);
+        }
+      };
+      fetchItems();
+    } else {
+      setItems([]);
+    }
+  }, [selectedMerchantId]);
+
+  const handleAddItem = async () => {
+    if (!selectedMerchantId || !newItemName || !newItemPrice || !newItemCurrency) {
+      alert('Please select a merchant and provide all item details.');
+      return;
+    }
+
+    const newItemData = {
+      name: newItemName,
+      price: newItemPrice,
+      currency: newItemCurrency,
+    };
+
+    try {
+      const response = await fetch(`http://localhost:3001/merchants/${selectedMerchantId}/items`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newItemData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`Failed to create item: ${error.error || response.statusText}`);
+      }
+
+      const createdItem = await response.json();
+      setItems([...items, createdItem]);
+
+      // Clear form fields
+      setNewItemName('');
+      setNewItemPrice('');
+      setNewItemCurrency('USD');
+    } catch (error) {
+      console.error('Error adding item:', error);
+      alert((error as Error).message);
+    }
+  };
+
   const handleAddMerchant = async () => {
     // Basic validation
     if (!newMerchantName || !newMerchantEmail || !businessName || !businessAddressLine1 || !businessAddressCity || !businessAddressRegion || !businessAddressPostalCode || !businessAddressCountry || !dobDay || !dobMonth || !dobYear || !annualCardVolume || !defaultStatementDescriptor || !incorporationDateDay || !incorporationDateMonth || !incorporationDateYear || !maxTransactionAmount || !mcc || !ownershipType || !phone || !principalPercentageOwnership || !taxId || !title || !url) {
@@ -69,7 +126,6 @@ const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
     const newMerchantData = {
       name: newMerchantName,
       email: newMerchantEmail,
-      items: [], // Items will be added separately
       businessName: businessName,
       businessAddress: {
         line1: businessAddressLine1,
@@ -79,19 +135,19 @@ const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
         country: businessAddressCountry,
       },
       dob: {
-        day: parseInt(dobDay),
-        month: parseInt(dobMonth),
-        year: parseInt(dobYear),
+        day: parseInt(dobDay) || 0,
+        month: parseInt(dobMonth) || 0,
+        year: parseInt(dobYear) || 0,
       },
-      annualCardVolume: parseFloat(annualCardVolume),
+      annualCardVolume: parseInt(annualCardVolume) || 0,
       defaultStatementDescriptor: defaultStatementDescriptor,
       hasAcceptedCreditCardsPreviously: hasAcceptedCreditCardsPreviously,
       incorporationDate: {
-        day: parseInt(incorporationDateDay),
-        month: parseInt(incorporationDateMonth),
-        year: parseInt(incorporationDateYear),
+        day: parseInt(incorporationDateDay) || 0,
+        month: parseInt(incorporationDateMonth) || 0,
+        year: parseInt(incorporationDateYear) || 0,
       },
-      maxTransactionAmount: parseFloat(maxTransactionAmount),
+      maxTransactionAmount: parseInt(maxTransactionAmount) || 0,
       mcc: mcc,
       ownershipType: ownershipType,
       phone: phone,
@@ -102,7 +158,7 @@ const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
     };
 
     try {
-      const response = await fetch('http://localhost:3001/merchants', {
+      const response = await fetch('http://localhost:3001/create_merchant', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,23 +207,6 @@ const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
     }
   };
 
-  const handleAddItem = () => {
-    if (selectedMerchantId && newItemName && newItemPrice && newItemCurrency) {
-      const newItem: Item = {
-        id: `item-${Date.now()}`,
-        name: newItemName,
-        price: parseFloat(newItemPrice),
-        currency: newItemCurrency,
-      };
-      addItemToMerchant(selectedMerchantId, newItem);
-      setNewItemName('');
-      setNewItemPrice('');
-      setNewItemCurrency('USD');
-    } else {
-      alert('Please select a merchant and provide item details.');
-    }
-  };
-
   return (
     <React.Fragment>
     <div className="p-4">
@@ -185,6 +224,12 @@ const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
           onClick={() => setActiveSubTab('merchantPlatform')}
         >
           Merchant Platform
+        </button>
+        <button
+          className={`py-2 px-4 text-lg ${activeSubTab === 'paymentInstrument' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-600'}`}
+          onClick={() => setActiveSubTab('paymentInstrument')}
+        >
+          Create Payment Instrument
         </button>
       </div>
 
@@ -250,7 +295,7 @@ const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
                   <option value="">Select Merchant</option>
                   {merchants.map((merchant) => (
                     <option key={merchant.id} value={merchant.id}>
-                      {merchant.name}
+                      {merchant.merchant_name}
                     </option>
                   ))}
                 </select>
@@ -279,7 +324,7 @@ const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
                   onClick={handleAddItem}
                   disabled={!selectedMerchantId}
                   className={`w-full py-2 px-4 text-white rounded-md ${
-                    selectedMerchantId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-400 cursor-not-allowed' 
+                    selectedMerchantId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-400 cursor-not-allowed'
                   }`}
                 >
                   Add Item
@@ -297,8 +342,8 @@ const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
               <div className="w-1/3">
                 <ul className="space-y-2">
                   {merchants.map((merchant) => (
-                    <li key={merchant.id} onClick={() => setSelectedMerchant(merchant)} className="cursor-pointer p-2 border rounded-md hover:bg-gray-100">
-                      {merchant.name} ({merchant.id})
+                    <li key={merchant.id} className="cursor-pointer p-2 border rounded-md hover:bg-gray-100">
+                      {merchant.merchant_name} ({merchant.id})
                     </li>
                   ))}
                 </ul>
@@ -306,29 +351,29 @@ const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
               <div className="w-2/3">
                 {selectedMerchant && (
                   <div className="p-4 border rounded-md shadow-sm bg-gray-50">
-                    <h4 className="text-lg font-semibold">{selectedMerchant.name}</h4>
+                    <h4 className="text-lg font-semibold">{selectedMerchant.merchant_name}</h4>
                     <p>Email: {selectedMerchant.email}</p>
                     <p>Business Name: {selectedMerchant.businessName}</p>
                     {selectedMerchant.businessAddress && <p>Address: {selectedMerchant.businessAddress.line1}, {selectedMerchant.businessAddress.city}, {selectedMerchant.businessAddress.region} {selectedMerchant.businessAddress.postal_code}, {selectedMerchant.businessAddress.country}</p>}
                     {selectedMerchant.dob && <p>DOB: {selectedMerchant.dob.day}/{selectedMerchant.dob.month}/{selectedMerchant.dob.year}</p>}
-                    <p>Annual Card Volume: {selectedMerchant.annualCardVolume}</p>
-                    <p>Default Statement Descriptor: {selectedMerchant.defaultStatementDescriptor}</p>
-                    <p>Has Accepted Credit Cards Previously: {selectedMerchant.hasAcceptedCreditCardsPreviously ? 'Yes' : 'No'}</p>
+                    <p>Annual Card Volume: {selectedMerchant.annual_card_volume}</p>
+                    <p>Default Statement Descriptor: {selectedMerchant.default_statement_descriptor}</p>
+                    <p>Has Accepted Credit Cards Previously: {selectedMerchant.has_accepted_credit_cards_previously ? 'Yes' : 'No'}</p>
                     {selectedMerchant.incorporationDate && <p>Incorporation Date: {selectedMerchant.incorporationDate.day}/{selectedMerchant.incorporationDate.month}/{selectedMerchant.incorporationDate.year}</p>}
-                    <p>Max Transaction Amount: {selectedMerchant.maxTransactionAmount}</p>
+                    <p>Max Transaction Amount: {selectedMerchant.max_transaction_amount}</p>
                     <p>MCC: {selectedMerchant.mcc}</p>
-                    <p>Ownership Type: {selectedMerchant.ownershipType}</p>
+                    <p>Ownership Type: {selectedMerchant.ownership_type}</p>
                     <p>Phone: {selectedMerchant.phone}</p>
-                    <p>Principal Percentage Ownership: {selectedMerchant.principalPercentageOwnership}%</p>
-                    <p>Tax ID: {selectedMerchant.taxId}</p>
+                    <p>Principal Percentage Ownership: {selectedMerchant.principal_percentage_ownership}%</p>
+                    <p>Tax ID: {selectedMerchant.tax_id}</p>
                     <p>Title: {selectedMerchant.title}</p>
                     <p>URL: {selectedMerchant.url}</p>
                     <h5 className="text-md font-medium mt-4">Items:</h5>
-                    {selectedMerchant.items && selectedMerchant.items.length === 0 ? (
+                    {items.length === 0 ? (
                       <p className="text-sm text-gray-600">No items for this merchant.</p>
                     ) : (
                       <ul className="list-disc list-inside ml-4">
-                        {selectedMerchant.items?.map((item) => (
+                        {items.map((item) => (
                           <li key={item.id} className="text-sm">
                             {item.name} - {item.currency} {item.price.toFixed(2)}
                           </li>
@@ -342,10 +387,23 @@ const MerchantSection: FC<MerchantSectionProps> = ({ addItemToMerchant }) => {
           )}
         </React.Fragment>
       )}
-    </div>
-    </React.Fragment>
-  );
-};
+      {activeSubTab === 'paymentInstrument' && (
+        <div>
+          <select
+            value={selectedMerchantId}
+            onChange={(e) => setSelectedMerchantId(e.target.value)}
+            className="w-full p-2 border rounded-md mb-4"
+          >
+            <option value="">Select Merchant</option>
+            {merchants.map((merchant) => (
+              <option key={merchant.id} value={merchant.identityId}>
+                {merchant.merchant_name} ({merchant.id})
+              </option>
+            ))}
+          </select>
+          {selectedMerchantId && <PaymentInstrumentForm identityId={selectedMerchantId} />}
+        </div>
+      )}
     </div>
     </React.Fragment>
   );
