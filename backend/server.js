@@ -11,7 +11,16 @@ const app = express();
 const port = 3001;
 
 // Connect to MongoDB when the server starts
-connectToMongo();
+connectToMongo().then(() => {
+  console.log("MongoDB connected, starting server...");
+  app.listen(port, () => {
+    console.log(`Simple backend listening at http://localhost:${port}`);
+  });
+}).catch(error => {
+  console.error("Failed to start server:", error);
+  process.exit(1);
+});
+console.log("Server.js file finished executing");
 
 const corsOptions = {
   origin: ["http://localhost:3000", process.env.FINIX_API_URL],
@@ -31,8 +40,4 @@ app.use(itemRoutes);
 
 app.get("/", (req, res) => {
   res.send("Simple Finix Backend is running!");
-});
-
-app.listen(port, () => {
-  console.log(`Simple backend listening at http://localhost:${port}`);
 });
