@@ -9,6 +9,7 @@ declare global {
 
 interface PaymentFormProps {
   buyerId: string;
+  merchantId: string;
   amount: number;
   currency: string;
   onPaymentSuccess: (data: any) => void;
@@ -17,6 +18,7 @@ interface PaymentFormProps {
 
 export default function PaymentForm({
   buyerId,
+  merchantId,
   amount,
   currency,
   onPaymentSuccess,
@@ -68,7 +70,7 @@ export default function PaymentForm({
           amount,
           currency,
           source: token, // The token from FinixForm is the source
-          merchant: "MUmfEGv5bMpSJ9k5TFRUjkmm", // Replace with your actual Merchant ID
+          merchant: merchantId,
           identity: buyerId, // Pass the buyerId to the backend
         }),
       });

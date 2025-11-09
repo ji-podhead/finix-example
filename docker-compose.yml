@@ -7,22 +7,24 @@ services:
       - ./backend:/usr/src/app
     working_dir: /usr/src/app
     command: node server.js
-    restart: "no"
     env_file:
       - .env
     depends_on:
       - mongo
+    networks:
+      - finix-net
   frontend:
     image: oven/bun:latest
     ports:
       - "3000:3000"
     volumes:
       - ./frontend:/app
-    network_mode: host
     working_dir: /app
     command: bun dev
     environment:
       - CHOKIDAR_USEPOLLING=true
+    networks:
+      - finix-net
   mongo:
     image: mongo
     ports:
@@ -30,5 +32,12 @@ services:
     volumes:
       - mongo-data:/data/db
 
+    networks:
+      - finix-net
+
 volumes:
   mongo-data:
+
+networks:
+  finix-net:
+    driver: bridge
