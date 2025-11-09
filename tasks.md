@@ -1,0 +1,51 @@
+- [x] Analyze existing frontend structure
+- [x] Create a new component for the taskbar
+- [x] Create "Buyer" and "Merchant" section components
+- [x] Read `docs/platform.md` to understand merchant creation requirements
+- [x] Read `backend/server.js` to understand existing backend logic
+- [x] Update `tasks.md` with current progress and reference to `platform.md`
+- [x] Create `frontend/app/components/Navbar.tsx`
+- [x] Fix errors in `frontend/app/components/Navbar.tsx`
+- [x] Define types for Buyer, Merchant, and Item
+- [x] Fix global.d.ts not being recognized as a module
+- [x] Address FinixForm, FormState, BinInformation errors
+- [x] Create `frontend/app/components/BuyerSection.tsx`
+- [x] Fix Buyer type error in `frontend/app/components/BuyerSection.tsx`
+- [x] Export Buyer, Merchant, and Item interfaces in `global.d.ts`
+- [x] Create `frontend/app/components/MerchantSection.tsx`
+- [x] Update `Merchant` interface in `global.d.ts` with detailed fields
+- [x] Update `MerchantSection.tsx` to include all required merchant fields
+- [x] Check `tsconfig.json` for JSX configuration
+- [x] Integrate Navbar into `frontend/app/page.tsx`
+- [x] Ensure Navbar and other components are correctly exported and imported
+- [x] Verify `frontend/tsconfig.json` for correct JSX configuration
+- [ ] Install `@types/react` and `@types/react-dom` to resolve JSX type issues (user denied)
+- [x] Fix `onTabChange` prop not being passed to Navbar
+- [x] Explicitly import `React` in `frontend/app/page.tsx`
+- [x] Add `types` to `tsconfig.json` to resolve JSX type issues
+- [ ] Run `npm install` to ensure all dependencies are correctly installed and types are recognized (user denied)
+- [x] Read `frontend/app/components/MerchantSection.tsx` to understand its current structure
+- [x] Implement sub-taskbar in `MerchantSection.tsx`
+- [x] Read `frontend/package.json` to check for React dependencies
+- [x] Read `frontend/tsconfig.json` to verify JSX configuration
+- [x] Explicitly import `React` and wrap JSX in `React.Fragment` in `MerchantSection.tsx`
+- [x] Fix duplicate React import in `MerchantSection.tsx`
+- [ ] Run `bun install` to ensure all dependencies are correctly installed and types are recognized (user denied)
+- [x] Read `backend/server.js` to understand existing backend structure
+- [x] Create backend endpoint for merchant creation and retrieval using Finix API: `{{baseUrl}}/merchants?limit=10`
+- [x] Modify frontend to call backend for merchant creation
+- [x] Modify frontend to fetch merchants from backend on component mount
+- [ ] Implement "Create Merchant" functionality
+- [ ] Implement "Merchant Platform" functionality (select merchants, create items)
+- [ ] Update `BuyerSection.tsx` to allow selecting merchants and items
+- [ ] Implement "Buy" functionality in `BuyerSection.tsx`
+- [ ] Implement state management for active tab and data
+- [ ] Implement prop drilling
+- [ ] Develop merchant creation functionality (frontend and backend)
+- [ ] Develop item creation functionality
+- [ ] Display data in "Buyer" and "Merchant" sections
+- [x] Update README.md with new frontend/backend application details and Finix API integration steps.
+- [x] Update tasks.md to reflect the implementation of merchant creation and fetching, and the integration with the backend.
+
+**Note on API URL:**
+If you see a syntax like `{{baseUrl}}/merchants?limit=10`, the `baseUrl` is the Finix API URL: `https://finix.sandbox-payments-api.com`.

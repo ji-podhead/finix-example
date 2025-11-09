@@ -1,0 +1,20 @@
+{
+  "name": "simple-backend",
+  "version": "1.0.0",
+  "description": "A simple backend for the Finix API Sandbox",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "@finix-payments/finix": "^3.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "mongodb": "^6.3.0"
+  },
+  "devDependencies": {
+
+  }
+}

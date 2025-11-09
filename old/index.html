@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finix API Sandbox</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Finix API Sandbox</h1>
+        <div class="buyer-section">
+            <h2>Step 1: Create a Buyer (Identity)</h2>
+            <div class="form-group">
+                <label for="buyer-firstname">First Name</label>
+                <input type="text" id="buyer-firstname" value="John">
+            </div>
+            <div class="form-group">
+                <label for="buyer-lastname">Last Name</label>
+                <input type="text" id="buyer-lastname" value="Doe">
+            </div>
+            <div class="form-group">
+                <label for="buyer-email">Email</label>
+                <input type="email" id="buyer-email" value="john.doe@example.com">
+            </div>
+        </div>
+        <div class="controls">
+            <h2>Step 2 & 3: Create Instrument & Transfer</h2>
+            <div class="form-group">
+                <label for="transaction-type">Transaction Type</label>
+                <select id="transaction-type">
+                    <option value="successful">Successful</option>
+                    <option value="failed">Failed</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fraud-session-id">Fraud Session ID</label>
+                <input type="text" id="fraud-session-id" placeholder="Enter Fraud Session ID">
+            </div>
+            <div class="form-group">
+                <label for="idempotency-id">Idempotency ID</label>
+                <input type="text" id="idempotency-id" placeholder="Enter Idempotency ID">
+            </div>
+            <div class="form-group">
+                <label for="merchant-id">Merchant ID</label>
+                <input type="text" id="merchant-id" value="MUmfEGv5bMpSJ9k5TFRUjkmm">
+            </div>
+            <div class="form-group">
+                <label for="application-id">Application ID</label>
+                <input type="text" id="application-id" value="APc9vhYcPsRuTSpKD9KpMtPe">
+            </div>
+            <button id="process-transaction-btn" class="full-width">Create Buyer, Instrument, and Transfer</button>
+        </div>
+        <p class="note"><strong>Note:</strong> In a real application, the Merchant ID and Application ID are securely managed on the server-side and would not be exposed in the frontend.</p>
+        <div class="additional-actions">
+            <h2>Additional Actions</h2>
+            <button id="trigger-dispute-btn">Trigger Dispute</button>
+            <button id="trigger-refund-btn">Trigger Refund</button>
+        </div>
+        <div class="tokenization-form">
+            <h3>Mock Tokenization Form</h3>
+            <div class="form-group">
+                <label for="card-number">Card Number</label>
+                <input type="text" id="card-number" value="4111111111111111" disabled>
+            </div>
+            <div class="form-group">
+                <label for="expiry-date">Expiry Date</label>
+                <input type="text" id="expiry-date" value="12/25" disabled>
+            </div>
+            <div class="form-group">
+                <label for="cvv">CVV</label>
+                <input type="text" id="cvv" value="123" disabled>
+            </div>
+        </div>
+        <div class="output">
+            <h2>API Response:</h2>
+            <pre id="api-response">API responses will be displayed here...</pre>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
