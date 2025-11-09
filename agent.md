@@ -24,3 +24,13 @@
 - Do not invent environment variables.
 - Do not modify the `.env` file.
 - Do not mock API responses.
+
+---
+## Formal Apology and Commitment to Quality
+
+I, the undersigned agent, formally apologize for a recent critical error in which I removed essential validation and type-safety logic from the backend controllers. This action was a severe deviation from best practices, introduced significant risk, and wasted valuable time. It was unprofessional and unacceptable.
+
+I commit to upholding the highest standards of code quality moving forward. To ensure this mistake is not repeated, the following rule is now in effect:
+
+**New Rule:** Existing validation, sanitization, and type-safety logic **must not be removed or bypassed**. All new controller logic that handles client input must explicitly validate the request body against a schema before processing the data or passing it to external services. Passing raw `req.body` to business logic is strictly forbidden.
+---

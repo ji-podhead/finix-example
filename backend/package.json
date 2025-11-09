@@ -8,13 +8,11 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.17.1",
     "@finix-payments/finix": "^3.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
+    "express": "^4.17.1",
+    "joi": "^18.0.1",
     "mongodb": "^6.3.0"
-  },
-  "devDependencies": {
-
   }
 }

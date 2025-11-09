@@ -12,23 +12,21 @@ const client = new MongoClient(uri, {
 
 let db;
 
-export const connectToMongo = async () => {
+export const connectToMongo = () => {
   console.log("Attempting to connect to MongoDB...");
-  try {
-    await client.connect();
-    console.log("Connected to MongoDB!");
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    db = client.db("finix_sandbox");
-  } catch (error) {
-    console.error("Failed to connect to MongoDB:", error);
-    process.exit(1);
-  }
+  return new Promise((resolve, reject) => {
+    client.connect()
+      .then(() => {
+        console.log("Connected to MongoDB!");
+        db = client.db("finix_sandbox");
+        resolve();
+      })
+      .catch(error => {
+        console.error("Failed to connect to MongoDB inside mongo.js:", error);
+        reject(error);
+      });
+  });
 };
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
-});
 
 export const getDb = () => {
   if (!db) {

@@ -1,12 +1,18 @@
 import finixApi from '../services/finix.js';
 import { getDb } from '../services/mongo.js';
+import { buyerSchema } from '../validation/schemas.js';
 
 export const createBuyer = async (req, res) => {
     console.log("Received request to create buyer:", req.body);
     try {
+        const { error, value } = buyerSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
+        }
+
         const identity = await finixApi('/identities', {
             method: 'POST',
-            body: JSON.stringify(req.body),
+            body: JSON.stringify(value),
         });
 
         const db = getDb();

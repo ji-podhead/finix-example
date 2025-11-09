@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { createMerchant, getMerchants, createMerchantIdentity } from '../controllers/merchantController.js';
+import { createIdentity, createMerchant, getMerchants } from '../controllers/merchantController.js';
 
 const router = Router();
 
-router.post('/create_merchant', createMerchant);
+router.post('/identities', createIdentity);
+router.post('/identities/:identityId/merchants', createMerchant);
 router.get('/merchants', getMerchants);
-router.post('/create-merchant-identity', createMerchantIdentity);
 
 export default router;
